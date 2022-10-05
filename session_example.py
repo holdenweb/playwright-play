@@ -8,11 +8,11 @@ def run(playwright: Playwright) -> None:
     # Open new page
     page = context.new_page()
 
-    # Go to https://www.gov.uk/government/organisations/department-for-international-trade
     page.goto(
-        "https://www.gov.uk/government/organisations/department-for-international-trade",
+        "https://trade.gov.uk",
         wait_until="domcontentloaded"
     )
+    expect(page).to_have_url("https://www.gov.uk/government/organisations/department-for-international-trade")
 
     # Click text=Accept additional cookies
     lctr = page.locator("text=Accept additional cookies")
@@ -21,14 +21,13 @@ def run(playwright: Playwright) -> None:
     # Click text=Hide this message
     page.locator("text=Hide this message").click()
 
-    # Click [aria-label="Cookies consent manager"] >> text=Accept all cookies
     # Handles cookie consent management if present
     try:
-        if page.locator(
+        lctr_2 = page.locator(
             "[aria-label=\"Close this message\"]"
-        ).count():
-        # Click [aria-label="Close this message"]
-            page.locator("[aria-label=\"Close this message\"]").click()
+        )
+        if lctr_2.count():
+            lctr_2.click()
     except PWTimeoutError:
         pass
 
@@ -38,14 +37,15 @@ def run(playwright: Playwright) -> None:
         wait_until="domcontentloaded"
     )
 
-    # expect(page).to_have_url("https://www.great.gov.uk/campaigns/internationalisation-fund-for-english-businesses/")
+    # Handle cookie popup if present.
     loc = page.locator(".button:visible:has-text('Accept all cookies')")
     if loc.count():
         loc.click()
 
     # Click text=Internationalisation Fund now open
     page.locator("text=Internationalisation Fund now open").click()
-
+    expect(page).to_have_url("https://www.great.gov.uk/campaigns/internationalisation-fund-for-english-businesses/")
+    page.pause()
     # Close page
     page.close()
 
